@@ -2,25 +2,22 @@
 (declare-const y Int)
 (declare-const a Int)
 (declare-const b Int)
-(declare-const t Int) ; temporary variable used in the swap
+(declare-const t Int) ; Additional variable t used in the program
 
 (push)
 
 (define-fun prefix () Bool
-  ; This represents the initial state and the execution of the first two if statements
-  (let ((x_init x) (y_init y) (a_init a) (b_init b))
-    (let ((x (ite (> x y) y x))
-          (y (ite (> x_init y) x_init y))
-          (a (ite (> a b) a b))
-          (b (ite (> a_init b) b a)))
-      true
-    )
-  )
+  ; Initial conditions of the program
+  true
 )
 
 (define-fun invariant-base () Bool
-  ; This represents the base case: before the while loop
-  (or (<= x y) (> a b))
+  ; Base case invariant: the state after the if conditions but before the loop
+  (let ((x1 (ite (> x y) y x))
+        (y1 (ite (> x y) x y))
+        (a1 (ite (> a b) a a))
+        (b1 (ite (> a b) b b)))
+    (or (<= x1 y1) (> a1 b1)))
 )
 
 (assert (not (=> prefix invariant-base)))
@@ -30,21 +27,23 @@
 (pop)
 
 (define-fun loop-body () Bool
-  ; This represents the body of the while loop
+  ; The body of the while loop
   (and (> y x)
        (= a (- a 1))
-       (= y (- y 1))
-  )
+       (= y (- y 1)))
 )
 
 (define-fun invariant () Bool
+  ; The invariant to be maintained throughout the program
   (or (<= x y) (> a b))
 )
 
 (define-fun invariant-post () Bool
-  ; This represents the invariant after the loop body
-  (or (<= x y) (> a b))
-)
+  ; The invariant to check after one iteration of the loop
+  (let ((a1 (- a 1))
+        (y1 (- y 1)))
+    (or (<= x y1) (> a1 b))
+))
 
 (assert (not (=>
           (and invariant loop-body)
